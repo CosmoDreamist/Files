@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件管理器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>文件管理器</h1>
+        </div>
+
+        <ul class="file-list" id="fileList">
+            <!-- 文件列表将通过JavaScript动态生成 -->
+        </ul>
+
+        <div class="upload-area">
+            <input type="file" id="fileInput" style="display: none" multiple>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">上传文件</button>
+        </div>
+    </div>
+
+    <script>
+        // 加载文件列表
+        function loadFiles() {
+            fetch('/api/files')
+                .then(response => response.json())
+                .then(files => {
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+                    
+                    files.forEach(file => {
+                        const li = document.createElement('li');
+                        li.className = 'file-item';
+                        li.innerHTML = `
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">${file.size || '-'}</span>
+                            <span class="file-date">${file.modified}</span>
+                        `;
+                        fileList.appendChild(li);
+                    });
+                });
+        }
+
+        // 处理文件上传
+        document.getElementById('fileInput').addEventListener('change', async function(e) {
+            const files = e.target.files;
+            for(let file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        alert('文件上传成功！');
+                        loadFiles(); // 重新加载文件列表
+                    } else {
+                        alert('上传失败：' + await response.text());
+                    }
+                } catch (error) {
+                    alert('上传出错：' + error);
+                }
+            }
+        });
+
+        // 页面加载时获取文件列表
+        loadFiles();
+    </script>
+</body>
+</html>
