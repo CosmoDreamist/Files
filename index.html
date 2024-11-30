@@ -4,65 +4,353 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文件管理器</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        .file-list {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
+        body {
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .current-path {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #4a5568;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .upload-area {
+            flex: 1;
+            background: #fff;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .new-folder-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .new-folder-btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .upload-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-left: 12px;
+        }
+
+        .upload-btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .file-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
         .file-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+            padding: 16px;
+            border-bottom: 1px solid #edf2f7;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
         .file-item:hover {
-            background-color: #f5f5f5;
+            background: #f7fafc;
         }
+
         .file-icon {
-            margin-right: 10px;
+            font-size: 24px;
+            margin-right: 16px;
+            opacity: 0.8;
         }
+
         .file-name {
             flex-grow: 1;
+            font-size: 14px;
+            color: #4a5568;
         }
+
+        .file-size {
+            margin-left: 8px;
+            color: #718096;
+            font-size: 12px;
+        }
+
         .file-actions {
             display: flex;
-            gap: 10px;
+            gap: 16px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
-        .upload-area {
-            margin: 20px auto;
-            max-width: 800px;
-            padding: 20px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            text-align: center;
+
+        .file-item:hover .file-actions {
+            opacity: 1;
         }
+
         .delete-btn {
-            color: red;
+            color: #e53e3e;
             cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
-        .current-path {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #f5f5f5;
-            border-radius: 4px;
+
+        .delete-btn:hover {
+            background: #fff5f5;
+        }
+
+        .file-input-wrapper {
+            display: inline-block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #edf2f7;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .file-input-label:hover {
+            background: #e2e8f0;
+        }
+
+        .upload-progress {
+            margin-top: 12px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #edf2f7;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #4299e1;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .dialog {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dialog h3 {
+            margin: 0 0 16px 0;
+            color: #2d3748;
+        }
+
+        .dialog input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .dialog input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .dialog-buttons button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dialog-buttons button:first-child {
+            background: #edf2f7;
+            border: none;
+            color: #4a5568;
+        }
+
+        .dialog-buttons button:last-child {
+            background: #4299e1;
+            border: none;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 24px;
+            background: #2d3748;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="current-path" id="currentPath">当前路径: /</div>
-    
-    <div class="upload-area">
-        <input type="file" id="fileInput" multiple>
-        <button onclick="uploadFiles()">上传文件</button>
+    <div class="container">
+        <div class="header">
+            <h1>文件管理器</h1>
+            <div class="current-path" id="currentPath">当前路径: /</div>
+        </div>
+        
+        <div class="action-bar">
+            <div class="upload-area">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" multiple>
+                    <label for="fileInput" class="file-input-label">选择文件</label>
+                </div>
+                <button class="upload-btn" onclick="uploadFiles()">上传文件</button>
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" id="progressBarFill"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="new-folder-btn" onclick="showNewFolderDialog()">
+                <span class="folder-icon">📁</span> 新建文件夹
+            </button>
+        </div>
+
+        <div class="file-list" id="fileList">
+            <!-- 文件列表将在这里动态显示 -->
+        </div>
     </div>
 
-    <div class="file-list" id="fileList">
-        <!-- 文件列表将在这里动态显示 -->
+    <div class="dialog-overlay" id="newFolderDialog">
+        <div class="dialog">
+            <h3>新建文件夹</h3>
+            <input type="text" id="folderName" placeholder="输入文件夹名称">
+            <div class="dialog-buttons">
+                <button onclick="hideNewFolderDialog()">取消</button>
+                <button onclick="createFolder()">创建</button>
+            </div>
+        </div>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
         const GITHUB_TOKEN = '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';
@@ -85,6 +373,7 @@
                 displayFiles(data);
             } catch (error) {
                 console.error('获取文件列表失败:', error);
+                showToast('获取文件列表失败', 'error');
             }
         }
 
@@ -92,7 +381,6 @@
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
 
-            // 添加返回上级目录按钮
             if (currentPath) {
                 const backItem = document.createElement('div');
                 backItem.className = 'file-item';
@@ -115,6 +403,13 @@
                 const name = document.createElement('span');
                 name.className = 'file-name';
                 name.textContent = file.name;
+
+                if (file.type !== 'dir') {
+                    const size = document.createElement('span');
+                    size.className = 'file-size';
+                    size.textContent = formatFileSize(file.size);
+                    name.appendChild(size);
+                }
 
                 const actions = document.createElement('div');
                 actions.className = 'file-actions';
@@ -145,11 +440,21 @@
         async function uploadFiles() {
             const fileInput = document.getElementById('fileInput');
             const files = fileInput.files;
+            const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
             for (const file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    showToast(`文件 ${file.name} 超过100MB限制，无法上传`, 'error');
+                    continue;
+                }
+
                 try {
                     const content = await readFileAsBase64(file);
                     const path = currentPath ? `${currentPath}/${file.name}` : file.name;
+                    
+                    const progressBar = document.getElementById('uploadProgress');
+                    const progressBarFill = document.getElementById('progressBarFill');
+                    progressBar.style.display = 'block';
                     
                     const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
                         method: 'PUT',
@@ -164,17 +469,18 @@
                     });
 
                     if (response.ok) {
-                        alert(`文件 ${file.name} 上传成功！`);
+                        showToast(`文件 ${file.name} (${formatFileSize(file.size)}) 上传成功！`, 'success');
                         fetchFiles(currentPath);
                     } else {
-                        alert(`文件 ${file.name} 上传失败！`);
+                        showToast(`文件 ${file.name} 上传失败！`, 'error');
                     }
                 } catch (error) {
                     console.error('上传文件失败:', error);
-                    alert(`上传文件 ${file.name} 时发生错误`);
+                    showToast(`上传文件 ${file.name} 时发生错误`, 'error');
                 }
             }
-            fileInput.value = ''; // 清空文件输入
+            fileInput.value = '';
+            document.getElementById('uploadProgress').style.display = 'none';
         }
 
         function readFileAsBase64(file) {
@@ -209,16 +515,92 @@
                 });
 
                 if (response.ok) {
-                    alert('文件删除成功！');
+                    showToast('文件删除成功！', 'success');
                     fetchFiles(currentPath);
                 } else {
-                    alert('文件删除失败！');
+                    showToast('文件删除失败！', 'error');
                 }
             } catch (error) {
                 console.error('删除文件失败:', error);
-                alert('删除文件时发生错误');
+                showToast('删除文件时发生错误', 'error');
             }
         }
+
+        function showNewFolderDialog() {
+            document.getElementById('newFolderDialog').style.display = 'flex';
+            document.getElementById('folderName').focus();
+        }
+
+        function hideNewFolderDialog() {
+            document.getElementById('newFolderDialog').style.display = 'none';
+            document.getElementById('folderName').value = '';
+        }
+
+        async function createFolder() {
+            const folderName = document.getElementById('folderName').value.trim();
+            
+            if (!folderName) {
+                showToast('请输入文件夹名称', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9\u4e00-\u9fa5][a-zA-Z0-9\u4e00-\u9fa5-_\s]*$/.test(folderName)) {
+                showToast('文件夹名称只能包含字母、数字、中文、下划线和横杠', 'error');
+                return;
+            }
+
+            const path = currentPath ? `${currentPath}/${folderName}/.gitkeep` : `${folderName}/.gitkeep`;
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `创建文件夹 ${folderName}`,
+                        content: 'Cg==', // 空文件的 base64 编码
+                    })
+                });
+
+                if (response.ok) {
+                    showToast(`文件夹 ${folderName} 创建成功！`, 'success');
+                    hideNewFolderDialog();
+                    fetchFiles(currentPath);
+                } else {
+                    showToast('创建文件夹失败！', 'error');
+                }
+            } catch (error) {
+                console.error('创建文件夹失败:', error);
+                showToast('创建文件夹时发生错误', 'error');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            toast.style.background = type === 'success' ? '#48bb78' : '#e53e3e';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        document.getElementById('folderName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                createFolder();
+            }
+        });
 
         // 初始加载
         fetchFiles();
